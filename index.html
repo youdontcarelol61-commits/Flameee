@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#050506"/>
+<title>FLAME</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Manrope:wght@600;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#050506;--card:#141418;--line:#ffffff14;--mut:#8b8680;--fl:linear-gradient(135deg,#ffe500,#ff7a00)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:#000;color:#f4f1ea;font-family:Manrope,system-ui,sans-serif;overflow:hidden}
+button,input{font:inherit;color:inherit;border:0;background:none}
+#app{max-width:430px;height:100%;margin:0 auto;position:relative;background:var(--bg);overflow:hidden}
+.view{position:absolute;inset:0;display:none;flex-direction:column}
+.view.on{display:flex}
+.hidden{display:none!important}
+.logo{font-family:Syne,sans-serif;letter-spacing:.14em;background:var(--fl);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mark{width:84px;height:84px;border-radius:24px;background:var(--fl);display:grid;place-items:center;font-size:38px}
+.splash{align-items:center;justify-content:center;gap:8px}
+.up{margin-top:auto;background:#0d0d11;border-radius:26px 26px 0 0;padding:22px 18px 30px;border-top:1px solid var(--line)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#08080b;padding:4px;border-radius:14px;margin:12px 0}
+.tab{padding:11px;border-radius:11px;color:var(--mut);font-weight:800}
+.tab.on{background:#1b1b22;color:#fff}
+label{display:block;font-size:11px;color:var(--mut);margin:10px 0 4px}
+input{width:100%;background:#08080b;border:1px solid var(--line);border-radius:14px;padding:13px}
+.btn{width:100%;margin-top:12px;padding:14px;border-radius:14px;font-weight:800}
+.p{background:var(--fl);color:#111}
+.g{background:#17171c;border:1px solid var(--line)}
+.mini{margin:0;width:auto;padding:7px 11px;border-radius:999px;background:var(--fl);color:#111;font-size:12px}
+.err{color:#ff5d73;font-size:13px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 12px 8px}
+.ico{width:40px;height:40px;display:grid;place-items:center;border-radius:13px;font-size:20px}
+.av{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;color:#111;font-weight:800;flex-shrink:0}
+.av.s{width:34px;height:34px;border-radius:12px;font-size:13px}
+.list{flex:1;overflow:auto;padding:6px 8px 96px}
+.row{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:11px;border-radius:16px}
+.grow{flex:1;min-width:0}
+.name{font-weight:800}
+.sub{color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dock{position:absolute;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));display:flex;justify-content:space-around;align-items:center;padding:8px;background:#0e0e12f2;border:1px solid var(--line);border-radius:22px}
+.dock b{color:var(--mut);font-size:11px}
+.dock b.on{color:#fff}
+.big{width:54px;height:54px;border-radius:18px;background:var(--fl);display:grid;place-items:center;font-size:22px;color:#111}
+.msgs{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
+.bub{max-width:78%;padding:9px 11px;border-radius:16px}
+.me{align-self:flex-end;background:#ff9a1f;color:#1a1000}
+.them{align-self:flex-start;background:#1c1c22}
+.bub img{width:200px;max-width:66vw;border-radius:12px;display:block}
+.meta{font-size:10px;opacity:.6;text-align:right;margin-top:3px}
+.comp{display:flex;gap:6px;align-items:center;padding:8px 8px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.comp input{border-radius:999px}
+.send{width:42px;height:42px;border-radius:14px;background:var(--fl);color:#111}
+.pad{padding:12px 16px;overflow:auto}
+.box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0}
+.toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:#fff;color:#111;padding:9px 14px;border-radius:999px;font-weight:800;font-size:13px;z-index:30;white-space:nowrap}
+.chip{padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px;color:var(--mut)}
+.lb{position:absolute;inset:0;background:#000c;display:grid;place-items:center;z-index:40}
+.lb img{max-width:100%;max-height:100%}
+.stage{position:absolute;inset:0;background:#000}
+#vid,#overlay,#preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#overlay{pointer-events:none}
+.camui{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:12px 10px calc(16px + env(safe-area-inset-bottom))}
+.filters{display:flex;gap:8px;overflow:auto;padding:6px 2px}
+.fbtn{min-width:70px;padding:9px 8px;border-radius:14px;background:#0009;color:#fff;font-size:12px;font-weight:800}
+.fbtn.on{outline:2px solid #ffe500}
+.shutter{width:74px;height:74px;border-radius:50%;background:#fff;border:5px solid #ffffff55;margin:8px auto;display:block}
+.note{text-align:center;color:#fff;font-size:12px;text-shadow:0 1px 4px #000}
+</style>
+</head>
+<body>
+<div id="app">
+<section class="view splash on" id="v-splash"><div class="mark">🔥</div><h1 class="logo">FLAME</h1></section>
+<section class="view" id="v-auth">
+  <div class="up">
+    <div class="mark" style="width:56px;height:56px;font-size:26px;margin:-46px auto 8px">🔥</div>
+    <h1 class="logo" style="text-align:center">FLAME</h1>
+    <div class="tabs"><button class="tab on" data-a="login">Login</button><button class="tab" data-a="reg">Neu</button></div>
+    <form id="f-login"><label>Username</label><input id="l-user" maxlength="16" autocapitalize="none"><label>Passwort</label><input id="l-pass" type="password"><button class="btn p">Rein</button></form>
+    <form id="f-reg" class="hidden"><label>Username</label><input id="r-user" maxlength="16" autocapitalize="none"><label>Name</label><input id="r-name" maxlength="18"><label>Passwort</label><input id="r-pass" type="password"><button class="btn p">Account</button></form>
+    <p id="auth-err" class="err hidden"></p>
+  </div>
+</section>
+<section class="view" id="v-home">
+  <header class="top"><button class="ico av s" id="btn-me">F</button><span class="logo">FLAME</span><button class="ico" id="btn-add">＋</button></header>
+  <div style="padding:0 14px 8px"><input id="q" placeholder="Suchen" style="border-radius:999px"></div>
+  <div id="chats" class="list"></div>
+  <nav class="dock"><b class="on" data-go="home">Chats</b><button class="big" id="dock-cam">📷</button><b data-go="friends">Freunde</b></nav>
+</section>
+<section class="view" id="v-friends">
+  <header class="top"><button class="ico" data-back="home">‹</button><b>Freunde</b><button class="ico" id="btn-add2">＋</button></header>
+  <div id="flist" class="list"></div>
+</section>
+<section class="view" id="v-add">
+  <header class="top"><button class="ico" data-back="home">‹</button><b>Adden</b><span></span></header>
+  <div class="pad"><form id="f-add"><input id="add-u" placeholder="username" maxlength="16" autocapitalize="none"><button class="btn p">Hinzufügen</button></form><p id="add-m" class="sub"></p></div>
+</section>
+<section class="view" id="v-chat">
+  <header class="top"><button class="ico" data-back="home">‹</button>
+    <div class="grow" style="display:flex;gap:8px;align-items:center"><div class="av s" id="p-av">?</div><div><b id="p-name">—</b><div class="sub" id="p-st"></div></div></div>
+    <div id="p-streak" class="chip hidden">🔥 0</div>
+  </header>
+  <div id="msgs" class="msgs"></div>
+  <form id="comp" class="comp"><button type="button" class="ico" id="btn-pic">🖼</button><input id="minp" maxlength="1200" placeholder="Nachricht"><button class="send">➤</button></form>
+  <input id="file" type="file" accept="image/*" hidden>
+</section>
+<section class="view" id="v-cam">
+  <div class="stage"><video id="vid" autoplay playsinline muted></video><canvas id="overlay"></canvas><img id="preview" class="hidden" alt=""></div>
+  <div class="camui">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <button class="ico" data-back="home" style="background:#0007">✕</button>
+      <span id="fname" style="font-weight:800">Normal</span>
+      <button class="ico" id="flip" style="background:#0007">↻</button>
+    </div>
+    <div>
+      <p class="note" id="face-n">Gesicht ins Bild</p>
+      <div class="filters" id="fbar"></div>
+      <button class="shutter" id="shut"></button>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn p hidden" id="sendshot" style="width:auto">Senden</button>
+        <button class="btn g hidden" id="retake" style="width:auto">Nochmal</button>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="view" id="v-set">
+  <header class="top"><button class="ico" data-back="home">‹</button><b>Profil</b><span></span></header>
+  <div class="pad" style="text-align:center">
+    <div class="av" id="me-av" style="width:80px;height:80px;border-radius:24px;font-size:28px;margin:8px auto">F</div>
+    <h2 id="me-n">—</h2>
+    <button class="chip" id="copyu">@<span id="me-u">—</span></button>
+    <div class="box" style="text-align:left"><b>Status</b><input id="st-in" maxlength="50" style="margin-top:8px"><button class="btn g" id="save-st">Speichern</button></div>
+    <button class="btn g" id="out">Abmelden</button>
+  </div>
+</section>
+<div id="lb" class="lb hidden"><img id="lbimg" alt=""></div>
+<div id="toast" class="toast hidden"></div>
+</div>
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/+esm";
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const LS = {s:"fl4_s", d:"fl4_d"};
+const BOT = {id:"bot", username:"flamebot", display:"FlameBot"};
+const S = {user:null, chats:{}, friends:{}, msgs:{}, users:{}, active:null, stream:null, shot:null, filter:"dog", facing:"user", face:null, running:false, flm:null};
+const FILTERS = [
+  {id:"dog",n:"Hund"},{id:"cat",n:"Katze"},{id:"fish",n:"Catfish"},
+  {id:"crown",n:"Krone"},{id:"cool",n:"Brille"},{id:"love",n:"Love"},
+  {id:"freckle",n:"Sommersprossen"},{id:"glow",n:"Glow"}
+];
+const uid = () => Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
+const now = () => Date.now();
+const day = (t=Date.now()) => {const d=new Date(t); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+const yest = dk => {const [y,m,da]=dk.split("-").map(Number); const x=new Date(y,m-1,da); x.setDate(x.getDate()-1); return day(x.getTime())};
+const cid = (a,b)=>[a,b].sort().join("__");
+const oth = (id,me)=>id.split("__").find(x=>x!==me);
+const ini = n => (n||"?").trim()[0].toUpperCase();
+const hue = s => {let h=0; for(const c of (s||"")) h=h*31+c.charCodeAt(0); return Math.abs(h)%360};
+const avs = s => `background:linear-gradient(135deg,hsl(${hue(s)},90%,62%),hsl(${(hue(s)+35)%360},90%,48%))`;
+const esc = s => String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+function toast(m){const t=$("#toast"); t.textContent=m; t.classList.remove("hidden"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.add("hidden"),1700)}
+function db(){ try{return JSON.parse(localStorage.getItem(LS.d))||base()}catch{return base()} }
+function base(){return {users:{},names:{},friends:{},chats:{},msgs:{}}}
+function save(d){ localStorage.setItem(LS.d, JSON.stringify(d)); }
+async function sha(t){const b=await crypto.subtle.digest("SHA-256", new TextEncoder().encode("fl4::"+t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function show(n){ $$(".view").forEach(v=>v.classList.remove("on")); $("#v-"+n).classList.add("on"); if(n!=="cam") stopCam(); }
+
+function seed(d){
+  d.users.bot=BOT; d.names.flamebot="bot";
+  if(!S.user) return d;
+  d.friends[S.user.id]=d.friends[S.user.id]||{}; d.friends[S.user.id].bot=true;
+  const id=cid(S.user.id,"bot");
+  d.chats[id]=d.chats[id]||{id,a:S.user.id,b:"bot",lastText:"Frag mich was.",lastAt:now(),streak:0,lastDay:"",pa:"",pb:"",unread:{[S.user.id]:1}};
+  d.msgs[id]=d.msgs[id]||{};
+  if(!Object.keys(d.msgs[id]).length) d.msgs[id].h={id:"h",from:"bot",type:"text",text:"Hey "+S.user.display+". Kamera-Filter kleben jetzt am Gesicht. Frag sonst Streak, Adden oder Filter.",at:now()};
+  return d;
+}
+function load(){
+  const d=seed(db());
+  S.users=d.users; S.friends=d.friends[S.user.id]||{};
+  S.chats={}; Object.values(d.chats||{}).forEach(c=>{ if(c.a===S.user.id||c.b===S.user.id) S.chats[c.id]=c; });
+  S.msgs=d.msgs||{};
+}
+function user(id){ if(id==="bot") return BOT; if(S.user&&S.user.id===id) return S.user; return S.users[id]||{display:"User",username:"user",id}; }
+function streak(c){ if(!c) return 0; if(c.lastDay && c.lastDay!==day() && c.lastDay!==yest(day())) return 0; return c.streak||0; }
+function fmt(t){const x=now()-t; if(x<6e4) return "jetzt"; if(x<36e5) return Math.floor(x/6e4)+"m"; return new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});}
+function clock(t){ return new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}); }
+
+function renderHome(){
+  $("#btn-me").textContent=ini(S.user.display); $("#btn-me").style.cssText=avs(S.user.username);
+  const q=($("#q").value||"").toLowerCase();
+  const rows=Object.values(S.chats).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0)).filter(c=>{
+    const u=user(oth(c.id,S.user.id)); return !q || (u.display+" "+u.username).toLowerCase().includes(q);
+  });
+  $("#chats").innerHTML = rows.map(c=>{
+    const u=user(oth(c.id,S.user.id)); const un=(c.unread&&c.unread[S.user.id])||0; const st=streak(c);
+    return `<button class="row" data-open="${c.id}"><div class="av" style="${avs(u.username)}">${ini(u.display)}</div><div class="grow"><div class="name">${esc(u.display)} ${st?"🔥"+st:""}</div><div class="sub">${esc(c.lastText||"")}</div></div><div class="sub">${c.lastAt?fmt(c.lastAt):""}${un?" · "+un:""}</div></button>`;
+  }).join("") || `<div class="sub" style="padding:28px;text-align:center">Keine Chats</div>`;
+}
+function renderFriends(){
+  $("#flist").innerHTML = Object.keys(S.friends||{}).map(id=>{
+    const u=user(id);
+    return `<div class="row"><div class="av" style="${avs(u.username)}">${ini(u.display)}</div><div class="grow"><b>${esc(u.display)}</b><div class="sub">@${esc(u.username)}</div></div><button class="mini" data-open="${cid(S.user.id,id)}">Chat</button></div>`;
+  }).join("") || `<div class="sub" style="padding:28px;text-align:center">Keine Freunde</div>`;
+}
+function renderChat(){
+  const id=S.active; if(!id) return;
+  const u=user(oth(id,S.user.id));
+  $("#p-name").textContent=u.display; $("#p-st").textContent=u.id==="bot"?"Antwortet auf Fragen":"";
+  $("#p-av").textContent=ini(u.display); $("#p-av").style.cssText=avs(u.username);
+  const st=streak(S.chats[id]); $("#p-streak").classList.toggle("hidden",!st); $("#p-streak").textContent="🔥 "+st;
+  const list=Object.values(S.msgs[id]||{}).sort((a,b)=>a.at-b.at).slice(-100);
+  let last="";
+  $("#msgs").innerHTML=list.map(m=>{
+    const d=day(m.at); let sep=""; if(d!==last){sep=`<div class="sub" style="align-self:center">${d===day()?"Heute":new Date(m.at).toLocaleDateString("de-DE")}</div>`; last=d;}
+    const body=m.type==="img"?`<img src="${m.image}" alt="">`:`<div>${esc(m.text||"")}</div>`;
+    return sep+`<div class="bub ${m.from===S.user.id?"me":"them"}">${body}<div class="meta">${clock(m.at)}</div></div>`;
+  }).join("");
+  $("#msgs").scrollTop=1e7;
+}
+function think(text, isImg){
+  const t=(text||"").toLowerCase();
+  const n=S.user.display||"";
+  if(isImg) return "Foto ist da. Wenn der Filter verrutscht: Gesicht mittig und hell halten.";
+  if(/hallo|hi|hey|yo|moin/.test(t)) return "Hey "+n+". Filter sitzen am Gesicht — Kamera unten.";
+  if(/wer bist|was bist|ki|ai|chatgpt|echt/.test(t)) return "Ich bin ein Antwort-Bot in der App. Richtige ChatGPT-KI kann hier nicht rein, weil der Schlüssel auf GitHub für alle sichtbar wäre.";
+  if(/filter|hund|katze|gesicht|track|brille/.test(t)) return "Gelber Kamera-Button. Gesicht ins Bild, Filter unten wählen. Hund/Katze/Catfish kleben am Kopf.";
+  if(/streak|flamme/.test(t)) return "Beide müssen am selben Tag schreiben, sonst geht die Flamme aus.";
+  if(/freund|adden|username/.test(t)) return "Oben rechts ＋ und Username. Geht, wenn der Account auf diesem Handy existiert.";
+  if(/foto|kamera|cam/.test(t)) return "Kamera-Button, Gesicht zeigen, auslösen, senden.";
+  if(/danke/.test(t)) return "Passt.";
+  if(/hilfe|was kannst/.test(t)) return "Chatten, Gesicht-Filter, Fotos, Streaks, Freunde per Username.";
+  if(/\?/.test(t)) return "Kamera für Filter, ＋ für Freunde, jeden Tag schreiben für Streak.";
+  if(t.length<10) return "Schreib einen ganzen Satz, dann kann ich genauer antworten.";
+  return "Verstanden. Willst du Filter, Streak oder jemanden adden?";
+}
+function applyStreak(c,from){
+  const t=day(); if(c.a===from) c.pa=t; else c.pb=t;
+  if(c.pa===t&&c.pb===t){ if(c.lastDay===t) return c; if(!c.lastDay||c.lastDay===yest(t)||!c.streak){c.streak=(c.lastDay===yest(t)?c.streak:0)+1;c.lastDay=t;} else {c.streak=1;c.lastDay=t;} }
+  else if(c.lastDay&&c.lastDay!==t&&c.lastDay!==yest(t)) c.streak=0;
+  return c;
+}
+function send(id,msg){
+  msg.id=msg.id||uid(); msg.at=now();
+  const d=db(); d.msgs[id]=d.msgs[id]||{}; d.msgs[id][msg.id]=msg;
+  if(d.chats[id]){ applyStreak(d.chats[id],msg.from); d.chats[id].lastText=msg.type==="img"?"📷 Foto":msg.text; d.chats[id].lastAt=msg.at; d.chats[id].unread=d.chats[id].unread||{}; const o=oth(id,msg.from); d.chats[id].unread[o]=(d.chats[id].unread[o]||0)+1; }
+  save(d); load(); if(S.active===id) renderChat(); renderHome();
+  if(oth(id,S.user.id)==="bot" && msg.from===S.user.id) setTimeout(()=>send(id,{from:"bot",type:"text",text:think(msg.text,msg.type==="img")}),260);
+}
+
+function P(lm,i,w,h){ return [lm[i].x*w, lm[i].y*h]; }
+function dist(a,b){ const dx=a[0]-b[0], dy=a[1]-b[1]; return Math.hypot(dx,dy); }
+function drawFilters(ctx, lm, w, h, id){
+  if(!lm||lm.length<100) return;
+  const nose=P(lm,1,w,h), fore=P(lm,10,w,h), chin=P(lm,152,w,h);
+  const lEye=P(lm,33,w,h), rEye=P(lm,263,w,h);
+  const lBrow=P(lm,70,w,h), rBrow=P(lm,300,w,h);
+  const mouth=P(lm,13,w,h);
+  const faceW=dist(lEye,rEye)*2.2;
+  const ang=Math.atan2(rEye[1]-lEye[1], rEye[0]-lEye[0]);
+  ctx.save();
+  if(id==="dog"){
+    const ear=(dir)=>{
+      const base=dir<0?lBrow:rBrow;
+      ctx.save(); ctx.translate(base[0], base[1]-faceW*0.15); ctx.rotate(ang+dir*0.35);
+      ctx.fillStyle="#6a3a16"; ctx.beginPath(); ctx.ellipse(0,0,faceW*0.16,faceW*0.28,0,0,7); ctx.fill();
+      ctx.fillStyle="#e7b39a"; ctx.beginPath(); ctx.ellipse(0,faceW*0.04,faceW*0.08,faceW*0.16,0,0,7); ctx.fill();
+      ctx.restore();
+    };
+    ear(-1); ear(1);
+    ctx.fillStyle="#111"; ctx.beginPath(); ctx.ellipse(nose[0],nose[1],faceW*0.09,faceW*0.07,ang,0,7); ctx.fill();
+    ctx.fillStyle="#ff8aa0"; ctx.beginPath(); ctx.ellipse(mouth[0],mouth[1]+faceW*0.08,faceW*0.07,faceW*0.08,ang,0,7); ctx.fill();
+  }
+  if(id==="cat"){
+    const ear=(dir)=>{
+      const base=dir<0?lBrow:rBrow;
+      ctx.save(); ctx.translate(base[0], base[1]-faceW*0.08); ctx.rotate(ang+dir*0.2);
+      ctx.fillStyle="#111"; ctx.beginPath(); ctx.moveTo(-faceW*0.08,faceW*0.08); ctx.lineTo(0,-faceW*0.28); ctx.lineTo(faceW*0.08,faceW*0.08); ctx.fill();
+      ctx.fillStyle="#ff9ab5"; ctx.beginPath(); ctx.moveTo(-faceW*0.04,faceW*0.06); ctx.lineTo(0,-faceW*0.16); ctx.lineTo(faceW*0.04,faceW*0.06); ctx.fill();
+      ctx.restore();
+    };
+    ear(-1); ear(1);
+    ctx.strokeStyle="#fff"; ctx.lineWidth=2;
+    for(const s of [-1,1]){ ctx.beginPath(); ctx.moveTo(nose[0]+s*8,nose[1]); ctx.lineTo(nose[0]+s*faceW*0.38,nose[1]-6+s); ctx.moveTo(nose[0]+s*8,nose[1]+6); ctx.lineTo(nose[0]+s*faceW*0.36,nose[1]+12); ctx.stroke(); }
+    ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(nose[0],nose[1],faceW*0.035,0,7); ctx.fill();
+  }
+  if(id==="fish"){
+    ctx.save(); ctx.translate(nose[0], nose[1]); ctx.rotate(ang);
+    ctx.fillStyle="#3aa7ff"; ctx.beginPath(); ctx.ellipse(0,0,faceW*0.42,faceW*0.34,0,0,7); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(-faceW*0.12,-faceW*0.04,faceW*0.08,0,7); ctx.arc(faceW*0.12,-faceW*0.04,faceW*0.08,0,7); ctx.fill();
+    ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(-faceW*0.1,-faceW*0.04,faceW*0.035,0,7); ctx.arc(faceW*0.1,-faceW*0.04,faceW*0.035,0,7); ctx.fill();
+    ctx.fillStyle="#ff7aa8"; ctx.beginPath(); ctx.ellipse(0,faceW*0.12,faceW*0.12,faceW*0.04,0,0,7); ctx.fill();
+    ctx.restore();
+  }
+  if(id==="crown"){
+    ctx.save(); ctx.translate(fore[0], fore[1]-faceW*0.12); ctx.rotate(ang);
+    ctx.fillStyle="#ffd000"; ctx.beginPath();
+    ctx.moveTo(-faceW*0.28,faceW*0.12); ctx.lineTo(-faceW*0.18,-faceW*0.16); ctx.lineTo(-faceW*0.08,faceW*0.08);
+    ctx.lineTo(0,-faceW*0.22); ctx.lineTo(faceW*0.08,faceW*0.08); ctx.lineTo(faceW*0.18,-faceW*0.16); ctx.lineTo(faceW*0.28,faceW*0.12); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  if(id==="cool"){
+    ctx.save(); ctx.translate((lEye[0]+rEye[0])/2,(lEye[1]+rEye[1])/2); ctx.rotate(ang);
+    const bw=dist(lEye,rEye)*1.7, bh=faceW*0.16;
+    ctx.fillStyle="#111"; ctx.fillRect(-bw/2,-bh/2,bw,bh);
+    ctx.fillStyle="#6ad8ff99"; ctx.fillRect(-bw/2+4,-bh/2+3,bw*0.42,bh-6); ctx.fillRect(4,-bh/2+3,bw*0.42,bh-6);
+    ctx.restore();
+  }
+  if(id==="love"){
+    const heart=(x,y,s)=>{ ctx.fillStyle="#ff2d55"; ctx.beginPath(); ctx.moveTo(x,y+s*0.3); ctx.bezierCurveTo(x-s,y-s*0.35,x-s,y+s*0.7,x,y+s); ctx.bezierCurveTo(x+s,y+s*0.7,x+s,y-s*0.35,x,y+s*0.3); ctx.fill(); };
+    heart(lEye[0], lEye[1], faceW*0.09); heart(rEye[0], rEye[1], faceW*0.09);
+  }
+  if(id==="freckle"){
+    ctx.fillStyle="#c36a3a";
+    const spots=[P(lm,50,w,h),P(lm,280,w,h),P(lm,36,w,h),P(lm,266,w,h),P(lm,205,w,h),P(lm,425,w,h)];
+    spots.forEach(p=>{ ctx.beginPath(); ctx.arc(p[0],p[1],2.2,0,7); ctx.fill(); });
+  }
+  if(id==="glow"){
+    ctx.strokeStyle="rgba(255,220,80,.55)"; ctx.lineWidth=faceW*0.06;
+    ctx.beginPath(); ctx.arc(nose[0], (fore[1]+chin[1])/2, dist(fore,chin)*0.62, 0, 7); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+async function loadFace(){
+  if(S.flm) return S.flm;
+  const files = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.17/wasm");
+  S.flm = await FaceLandmarker.createFromOptions(files, {
+    baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task" },
+    runningMode: "VIDEO", numFaces: 1
+  });
+  return S.flm;
+}
+
+function fitOverlay(){
+  const v=$("#vid"), c=$("#overlay");
+  const r=v.getBoundingClientRect();
+  c.width=r.width*devicePixelRatio; c.height=r.height*devicePixelRatio;
+  c.style.width=r.width+"px"; c.style.height=r.height+"px";
+}
+
+function loop(){
+  if(!S.running) return;
+  const v=$("#vid"), c=$("#overlay");
+  if(v.readyState>=2 && S.flm){
+    const res=S.flm.detectForVideo(v, performance.now());
+    const ctx=c.getContext("2d");
+    ctx.clearRect(0,0,c.width,c.height);
+    if(res.faceLandmarks && res.faceLandmarks[0]){
+      S.face=res.faceLandmarks[0];
+      $("#face-n").textContent="";
+      drawFilters(ctx, S.face, c.width, c.height, S.filter);
+    } else {
+      S.face=null;
+      $("#face-n").textContent="Gesicht mittig ins Bild";
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+function stopCam(){
+  S.running=false;
+  if(S.stream){ S.stream.getTracks().forEach(t=>t.stop()); S.stream=null; }
+}
+async function startCam(){
+  stopCam();
+  $("#preview").classList.add("hidden"); $("#vid").classList.remove("hidden"); $("#overlay").classList.remove("hidden");
+  $("#sendshot").classList.add("hidden"); $("#retake").classList.add("hidden"); $("#shut").classList.remove("hidden");
+  try{
+    S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:S.facing,width:{ideal:720}},audio:false});
+    const v=$("#vid"); v.srcObject=S.stream; await v.play();
+    fitOverlay();
+    await loadFace();
+    S.running=true; loop();
+  }catch(e){ toast("Kamera blockiert"); show("home"); }
+}
+
+function capture(){
+  const v=$("#vid");
+  const out=document.createElement("canvas");
+  out.width=v.videoWidth||720; out.height=v.videoHeight||960;
+  const ctx=out.getContext("2d");
+  ctx.drawImage(v,0,0,out.width,out.height);
+  if(S.face) drawFilters(ctx, S.face, out.width, out.height, S.filter);
+  S.shot=out.toDataURL("image/jpeg",.62);
+  $("#preview").src=S.shot; $("#preview").classList.remove("hidden");
+  $("#overlay").classList.add("hidden"); $("#vid").classList.add("hidden");
+  $("#shut").classList.add("hidden"); $("#sendshot").classList.remove("hidden"); $("#retake").classList.remove("hidden");
+  S.running=false; stopCam();
+}
+
+async function after(u){ S.user=u; localStorage.setItem(LS.s,JSON.stringify({id:u.id})); save(seed(db())); load(); renderHome(); show("home"); }
+
+function bind(){
+  $$(".tab").forEach(t=>t.onclick=()=>{ $$(".tab").forEach(x=>x.classList.remove("on")); t.classList.add("on"); $("#f-login").classList.toggle("hidden",t.dataset.a!=="login"); $("#f-reg").classList.toggle("hidden",t.dataset.a!=="reg"); });
+  $("#f-login").onsubmit=async e=>{ e.preventDefault(); try{ const d=db(); const id=d.names[$("#l-user").value.toLowerCase().trim()]; if(!id) throw new Error("User nicht gefunden"); const u=d.users[id]; if(u.pass!==await sha($("#l-pass").value)) throw new Error("Falsches Passwort"); after(u);}catch(err){ $("#auth-err").textContent=err.message; $("#auth-err").classList.remove("hidden"); } };
+  $("#f-reg").onsubmit=async e=>{ e.preventDefault(); try{ const username=$("#r-user").value.toLowerCase().trim(); const display=$("#r-name").value.trim(); const pass=$("#r-pass").value; if(!/^[a-z0-9_]{3,16}$/.test(username)) throw new Error("Username: 3–16 a-z 0-9 _"); if(!display) throw new Error("Name fehlt"); if(pass.length<4) throw new Error("Passwort zu kurz"); const d=db(); if(d.names[username]) throw new Error("Username weg"); const u={id:uid(),username,display,pass:await sha(pass)}; d.users[u.id]=u; d.names[username]=u.id; save(d); after(u);}catch(err){ $("#auth-err").textContent=err.message; $("#auth-err").classList.remove("hidden"); } };
+  $("#btn-me").onclick=()=>{ $("#me-av").textContent=ini(S.user.display); $("#me-av").style.cssText=avs(S.user.username)+"width:80px;height:80px;border-radius:24px;font-size:28px;margin:8px auto"; $("#me-n").textContent=S.user.display; $("#me-u").textContent=S.user.username; show("set"); };
+  $("#btn-add").onclick=$("#btn-add2").onclick=()=>{ $("#add-m").textContent=""; show("add"); };
+  $$("[data-back]").forEach(b=>b.addEventListener("click",()=>{ load(); renderHome(); show(b.getAttribute("data-back")); }));
+  $$(".dock b[data-go]").forEach(b=>b.onclick=()=>{ $$(".dock b").forEach(x=>x.classList.remove("on")); b.classList.add("on"); if(b.dataset.go==="friends"){renderFriends();show("friends");} else {renderHome();show("home");} });
+  $("#q").oninput=renderHome;
+  const open=e=>{ const r=e.target.closest("[data-open]"); if(!r) return; S.active=r.dataset.open; const d=db(); if(d.chats[S.active]){ d.chats[S.active].unread=d.chats[S.active].unread||{}; d.chats[S.active].unread[S.user.id]=0; save(d); load(); } renderChat(); show("chat"); };
+  $("#chats").onclick=open; $("#flist").onclick=open;
+  $("#f-add").onsubmit=e=>{ e.preventDefault(); const name=$("#add-u").value.toLowerCase().trim(); const d=db(); const id=d.names[name]; if(!id){ $("#add-m").textContent="Username nicht gefunden."; return; } if(id===S.user.id){ $("#add-m").textContent="Das bist du."; return; } d.friends[S.user.id]=d.friends[S.user.id]||{}; d.friends[id]=d.friends[id]||{}; d.friends[S.user.id][id]=true; d.friends[id][S.user.id]=true; const idc=cid(S.user.id,id); d.chats[idc]=d.chats[idc]||{id:idc,a:S.user.id,b:id,lastText:"Verbunden 🔥",lastAt:now(),streak:0,lastDay:"",pa:"",pb:"",unread:{}}; save(d); load(); toast("Freund da"); renderHome(); show("home"); };
+  $("#comp").onsubmit=e=>{ e.preventDefault(); const t=$("#minp").value.trim(); if(!t||!S.active) return; $("#minp").value=""; send(S.active,{from:S.user.id,type:"text",text:t}); };
+  $("#btn-pic").onclick=()=>$("#file").click();
+  $("#file").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f||!S.active) return; const img=new Image(); const url=URL.createObjectURL(f); await new Promise(r=>{img.onload=r; img.src=url}); const c=document.createElement("canvas"); const sc=Math.min(1,900/Math.max(img.width,img.height)); c.width=img.width*sc; c.height=img.height*sc; c.getContext("2d").drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url); send(S.active,{from:S.user.id,type:"img",image:c.toDataURL("image/jpeg",.55)}); };
+  $("#msgs").onclick=e=>{ const i=e.target.closest("img"); if(!i) return; $("#lbimg").src=i.src; $("#lb").classList.remove("hidden"); };
+  $("#lb").onclick=()=>$("#lb").classList.add("hidden");
+  $("#fbar").innerHTML=FILTERS.map((f,i)=>`<button class="fbtn ${i===0?"on":""}" data-f="${f.id}">${f.n}</button>`).join("");
+  $("#fbar").onclick=e=>{ const b=e.target.closest("[data-f]"); if(!b) return; S.filter=b.dataset.f; $$(".fbtn").forEach(x=>x.classList.toggle("on",x===b)); $("#fname").textContent=FILTERS.find(x=>x.id===S.filter).n; };
+  $("#dock-cam").onclick=()=>{ show("cam"); startCam(); };
+  $("#flip").onclick=()=>{ S.facing=S.facing==="user"?"environment":"user"; startCam(); };
+  $("#shut").onclick=capture;
+  $("#retake").onclick=()=>startCam();
+  $("#sendshot").onclick=()=>{ if(!S.shot) return; let target=S.active; if(!target){ const ids=Object.keys(S.friends); target=ids.length?cid(S.user.id,ids[0]):null; } if(!target){ toast("Erst Chat öffnen"); show("home"); return; } S.active=target; send(target,{from:S.user.id,type:"img",image:S.shot}); show("chat"); renderChat(); };
+  $("#copyu").onclick=async()=>{ try{ await navigator.clipboard.writeText(S.user.username); toast("Kopiert"); }catch{ toast("@"+S.user.username); } };
+  $("#save-st").onclick=()=>{ const d=db(); if(d.users[S.user.id]) d.users[S.user.id].status=$("#st-in").value.trim(); save(d); toast("Gespeichert"); };
+  $("#out").onclick=()=>{ localStorage.removeItem(LS.s); S.user=null; show("auth"); };
+  window.addEventListener("resize", ()=>{ if(S.running) fitOverlay(); });
+}
+bind();
+setTimeout(()=>{ const sess=(()=>{try{return JSON.parse(localStorage.getItem(LS.s))}catch{return null}})(); if(sess){ const u=db().users[sess.id]; if(u){ after(u); return; } } show("auth"); },280);
+</script>
+</body>
+</html>
